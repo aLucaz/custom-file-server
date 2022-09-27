@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	decoded := util.DecodeStr(constant.SERVER_BANNER)
+	decoded := util.DecodeBase64Str(constant.SERVER_BANNER)
 	util.WriteBanner(decoded)
 	util.WriteMsgLog(constant.INFO, "Loading configuration...")
 	config, err := util.GetConfig()

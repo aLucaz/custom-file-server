@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 			util.WriteMsgLog(constant.ERROR, err.Error())
 		}
 	}(connection)
-	decoded := util.DecodeStr(constant.CLIENT_BANNER)
+	decoded := util.DecodeBase64Str(constant.CLIENT_BANNER)
 	util.WriteBanner(decoded)
 	util.WriteMsgLog(constant.INFO, "Starting client...")
 	//arguments := os.Args
@@ -32,9 +33,12 @@ func main() {
 		server, err := net.Listen(constant.SERVER_TYPE, constant.CLIENT_HOST+":")
 		request := model.ClientRegistrationRequest{}
 		request.ChannelName = arguments[1]
-		request.Port = server.Addr().String()
+		address := strings.Split(server.Addr().String(), ":")
+		request.Port = address[1]
 		jsonRequest, err := json.Marshal(request)
-		_, err = connection.Write(util.EncodeToBytes(jsonRequest))
+		encodedRequest := util.EncodeToBytes(jsonRequest)
+		//util.WriteMsgLog(constant.INFO, string(encodedRequest))
+		_, err = connection.Write(encodedRequest)
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())
 			os.Exit(1)
@@ -46,7 +50,7 @@ func main() {
 				os.Exit(1)
 			}
 		}(server)
-		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting client receiver on port %s...", server.Addr().String()))
+		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting client receiver on port %s...", address[1]))
 		for true {
 			_, err := server.Accept()
 			if err != nil {
