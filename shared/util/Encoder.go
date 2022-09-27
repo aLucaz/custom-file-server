@@ -2,8 +2,8 @@ package util
 
 import (
 	"bytes"
+	"custom-file-server/shared/constant"
 	"encoding/gob"
-	"log"
 )
 
 func EncodeToBytes(structure interface{}) []byte {
@@ -11,7 +11,7 @@ func EncodeToBytes(structure interface{}) []byte {
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(structure)
 	if err != nil {
-		log.Fatal(err)
+		WriteMsgLog(constant.ERROR, err.Error())
 	}
 	return buf.Bytes()
 }

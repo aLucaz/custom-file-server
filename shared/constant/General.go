@@ -33,3 +33,15 @@ const (
 const (
 	SEPARATOR = "/"
 )
+
+const (
+	HEADER_TITLE string = "HEADER  "
+	BODY_TITLE          = "BODY  "
+	REQ_SEP             = "\n"
+)
+
+const (
+	REGISTER_CLIENT   = "REGISTER_CLIENT"
+	SEND_FILE         = "SEND_FILE"
+	UNREGISTER_CLIENT = "UNREGISTER_CLIENT"
+)

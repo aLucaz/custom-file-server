@@ -2,13 +2,11 @@ package main
 
 import (
 	"custom-file-server/shared/constant"
-	"custom-file-server/shared/model"
+	"custom-file-server/shared/service"
 	"custom-file-server/shared/util"
-	"encoding/json"
 	"fmt"
 	"net"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -29,16 +27,9 @@ func main() {
 	arguments := [2]string{"receive", "channel-1"}
 	if arguments[0] == constant.RECEIVE_MODE {
 		util.WriteMsgLog(constant.INFO, "Reveiver mode activated")
-		// initializating receiver
 		server, err := net.Listen(constant.SERVER_TYPE, constant.CLIENT_HOST+":")
-		request := model.ClientRegistrationRequest{}
-		request.ChannelName = arguments[1]
-		address := strings.Split(server.Addr().String(), ":")
-		request.Port = address[1]
-		jsonRequest, err := json.Marshal(request)
-		encodedRequest := util.EncodeToBytes(jsonRequest)
-		//util.WriteMsgLog(constant.INFO, string(encodedRequest))
-		_, err = connection.Write(encodedRequest)
+		request := service.CreateClientRegistrationRequest(server.Addr().String(), arguments[1])
+		_, err = connection.Write(request)
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())
 			os.Exit(1)
@@ -50,7 +41,7 @@ func main() {
 				os.Exit(1)
 			}
 		}(server)
-		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting client receiver on port %s...", address[1]))
+		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting watcher..."))
 		for true {
 			_, err := server.Accept()
 			if err != nil {

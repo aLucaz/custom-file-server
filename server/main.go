@@ -33,6 +33,6 @@ func main() {
 			util.WriteMsgLog(constant.ERROR, err.Error())
 			os.Exit(1)
 		}
-		go service.RegisterChannel(conn, config)
+		go service.ProcessRequest(conn, config)
 	}
 }
