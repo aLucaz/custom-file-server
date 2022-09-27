@@ -1,7 +1,7 @@
 package util
 
 import (
-	"custom-file-server/server/pkg/constant"
+	"custom-file-server/shared/constant"
 	"fmt"
 	"time"
 )

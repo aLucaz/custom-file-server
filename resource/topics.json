@@ -1,0 +1,24 @@
+{
+  "topics": [
+    {
+      "name": "channel-1",
+      "port": []
+    },
+    {
+      "name": "channel-2",
+      "port": []
+    },
+    {
+      "name": "channel-3",
+      "port": []
+    },
+    {
+      "name": "channel-4",
+      "port": []
+    },
+    {
+      "name": "channel-5",
+      "port": []
+    }
+  ]
+}
