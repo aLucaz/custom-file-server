@@ -26,7 +26,10 @@ func SendFile(sendFileRequest model.SendFileRequest, headers model.Header, confi
 		if topic.Name == channelName {
 			for _, port := range topic.Ports {
 				connection, err := net.Dial(constant.SERVER_TYPE, constant.CLIENT_HOST+":"+port)
-				request := service.SendFileFromServer(sendFileRequest, headers)
+				if err != nil {
+					util.WriteMsgLog(constant.ERROR, err.Error())
+				}
+				request := service.CreateSendFileRequestFromServer(sendFileRequest, headers)
 				_, err = connection.Write(request)
 				err = connection.Close()
 				if err != nil {

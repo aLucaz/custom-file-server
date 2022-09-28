@@ -43,17 +43,17 @@ func main() {
 		}(server)
 		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting watcher..."))
 		for true {
-			_, err := server.Accept()
+			conn, err := server.Accept()
 			if err != nil {
 				util.WriteMsgLog(constant.ERROR, err.Error())
 				os.Exit(1)
 			}
-			service.ProcessMessage(connection)
+			go service.ProcessMessage(conn)
 		}
 	} else if arguments[1] == constant.SEND_MODE {
 		util.WriteMsgLog(constant.INFO, "Sender mode activated")
 		request := sharedService.CreateSendFileRequest(arguments[2], arguments[3])
-		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Sending file to topic named: %s", arguments[3]))
+		util.WriteMsgLog(constant.INFO, fmt.Sprintf("File sent on topic named: %s", arguments[3]))
 		_, err = connection.Write(request)
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())

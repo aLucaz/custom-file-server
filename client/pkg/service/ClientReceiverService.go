@@ -14,6 +14,7 @@ func ProcessMessage(conn net.Conn) {
 		util.WriteMsgLog(constant.ERROR, err.Error())
 	}
 	validBuffer := buffer[:bufferLen]
+	util.WriteMsgLog(constant.INFO, string(validBuffer))
 	headers := service.GetHeaders(validBuffer)
 	sendFileRequest := service.GetSendFileBody(validBuffer)
 	if util.Hash(sendFileRequest.Data) == headers.FingerPrint {

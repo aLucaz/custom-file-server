@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"custom-file-server/shared/constant"
 	"encoding/gob"
+	"fmt"
 )
 
 func EncodeToBytes(structure interface{}) []byte {
@@ -18,8 +19,7 @@ func EncodeToBytes(structure interface{}) []byte {
 }
 
 func Hash(data string) string {
-	hashEncoder := sha256.New()
-	hashEncoder.Write([]byte(data))
-	hashed := hashEncoder.Sum(nil)
-	return string(hashed)
+	dataByte := []byte(data)
+	sum := sha256.Sum256(dataByte)
+	return fmt.Sprintf("%x", string(sum[:]))
 }

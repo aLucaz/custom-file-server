@@ -1,16 +1,13 @@
 package service
 
 import (
-	"bufio"
 	"custom-file-server/shared/constant"
 	"custom-file-server/shared/model"
 	"custom-file-server/shared/util"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -33,15 +30,8 @@ func CreateClientRegistrationRequest(address string, channelName string) []byte 
 }
 
 func CreateSendFileRequest(fileName string, channelName string) []byte {
-	fileSeparator := fmt.Sprintf("%c", filepath.Separator)
-	path := constant.TEST_FILES_DIRECTORY + fileSeparator + fileName
-	file, err := os.Open(path)
-	reader := bufio.NewReader(file)
-	content, err := ioutil.ReadAll(reader)
-	if err != nil {
-		util.WriteMsgLog(constant.ERROR, err.Error())
-		os.Exit(1)
-	}
+	path := constant.TEST_FILES_DIRECTORY + "/" + fileName
+	content := util.ReadAllByte(path)
 	encoded := base64.StdEncoding.EncodeToString(content)
 	hashed := util.Hash(encoded)
 	headers := model.Header{}
@@ -60,7 +50,7 @@ func CreateSendFileRequest(fileName string, channelName string) []byte {
 	return []byte(requestStr)
 }
 
-func SendFileFromServer(body model.SendFileRequest, headers model.Header) []byte {
+func CreateSendFileRequestFromServer(body model.SendFileRequest, headers model.Header) []byte {
 	jsonBody, err := json.Marshal(body)
 	jsonHeaders, err := json.Marshal(headers)
 	if err != nil {

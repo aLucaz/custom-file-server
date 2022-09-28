@@ -31,7 +31,7 @@ const (
 )
 
 const (
-	SEPARATOR = "/"
+	SEPARATOR = "\\"
 )
 
 const (
@@ -51,5 +51,5 @@ const (
 )
 
 const (
-	TEST_FILES_DIRECTORY = "C:\\Users\\jlucasra\\Documents\\projects\\CUSTOM\\custom-file-server\\resource\\files"
+	TEST_FILES_DIRECTORY = "./resource/files"
 )
