@@ -1,11 +1,14 @@
 package service
 
 import (
+	"bufio"
 	"custom-file-server/shared/constant"
 	"custom-file-server/shared/model"
 	"custom-file-server/shared/util"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -28,8 +31,41 @@ func CreateClientRegistrationRequest(address string, channelName string) []byte 
 	return []byte(requestStr)
 }
 
-func createSendFileRequest() {
+func CreateSendFileRequest(path string, channelName string) []byte {
+	file, err := os.Open(path)
+	reader := bufio.NewReader(file)
+	content, err := ioutil.ReadAll(reader)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		os.Exit(1)
+	}
+	encoded := base64.StdEncoding.EncodeToString(content)
+	hashed := util.Hash(encoded)
+	headers := model.Header{}
+	headers.Operation = constant.SEND_FILE
+	headers.FingerPrint = hashed
+	body := model.SendFileRequest{}
+	body.Data = encoded
+	body.ChannelName = channelName
+	jsonBody, err := json.Marshal(body)
+	jsonHeaders, err := json.Marshal(headers)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		os.Exit(1)
+	}
+	requestStr := constant.HEADER_TITLE + string(jsonHeaders[:]) + constant.REQ_SEP + constant.BODY_TITLE + string(jsonBody[:])
+	return []byte(requestStr)
+}
 
+func SendFileFromServer(body model.SendFileRequest, headers model.Header) []byte {
+	jsonBody, err := json.Marshal(body)
+	jsonHeaders, err := json.Marshal(headers)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		os.Exit(1)
+	}
+	requestStr := constant.HEADER_TITLE + string(jsonHeaders[:]) + constant.REQ_SEP + constant.BODY_TITLE + string(jsonBody[:])
+	return []byte(requestStr)
 }
 
 func GetHeaders(buffer []byte) model.Header {
@@ -54,4 +90,16 @@ func GetClientRegistrationBody(buffer []byte) model.ClientRegistrationRequest {
 		util.WriteMsgLog(constant.ERROR, err.Error())
 	}
 	return clientRegistrationRequest
+}
+
+func GetSendFileBody(buffer []byte) model.SendFileRequest {
+	bufferStr := string(buffer)
+	request := strings.Split(bufferStr, constant.REQ_SEP)
+	requestBody := strings.Split(request[1], constant.BODY_TITLE)[1]
+	sendFileRequest := model.SendFileRequest{}
+	err := json.Unmarshal([]byte(requestBody), &sendFileRequest)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+	}
+	return sendFileRequest
 }

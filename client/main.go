@@ -1,8 +1,9 @@
 package main
 
 import (
+	"custom-file-server/client/pkg/service"
 	"custom-file-server/shared/constant"
-	"custom-file-server/shared/service"
+	sharedService "custom-file-server/shared/service"
 	"custom-file-server/shared/util"
 	"fmt"
 	"net"
@@ -25,9 +26,9 @@ func main() {
 	util.WriteMsgLog(constant.INFO, "Starting client...")
 	arguments := os.Args
 	if arguments[1] == constant.RECEIVE_MODE {
-		util.WriteMsgLog(constant.INFO, "Reveiver mode activated")
+		util.WriteMsgLog(constant.INFO, "Receiver mode activated")
 		server, err := net.Listen(constant.SERVER_TYPE, constant.CLIENT_HOST+":")
-		request := service.CreateClientRegistrationRequest(server.Addr().String(), arguments[2])
+		request := sharedService.CreateClientRegistrationRequest(server.Addr().String(), arguments[2])
 		_, err = connection.Write(request)
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())
@@ -47,6 +48,16 @@ func main() {
 				util.WriteMsgLog(constant.ERROR, err.Error())
 				os.Exit(1)
 			}
+			service.ProcessMessage(connection)
+		}
+	} else if arguments[1] == constant.SEND_MODE {
+		util.WriteMsgLog(constant.INFO, "Sender mode activated")
+		request := sharedService.CreateSendFileRequest(arguments[2], arguments[3])
+		util.WriteMsgLog(constant.INFO, fmt.Sprintf("Sending file to topic named: %s", arguments[3]))
+		_, err = connection.Write(request)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+			os.Exit(1)
 		}
 	}
 }
