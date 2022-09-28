@@ -49,3 +49,7 @@ const (
 const (
 	MAX_SIZE_MESSAGE = 2000000
 )
+
+const (
+	TEST_FILES_DIRECTORY = "C:\\Users\\jlucasra\\Documents\\projects\\CUSTOM\\custom-file-server\\resource\\files"
+)

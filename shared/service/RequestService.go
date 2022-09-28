@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -31,7 +32,9 @@ func CreateClientRegistrationRequest(address string, channelName string) []byte 
 	return []byte(requestStr)
 }
 
-func CreateSendFileRequest(path string, channelName string) []byte {
+func CreateSendFileRequest(fileName string, channelName string) []byte {
+	fileSeparator := fmt.Sprintf("%c", filepath.Separator)
+	path := constant.TEST_FILES_DIRECTORY + fileSeparator + fileName
 	file, err := os.Open(path)
 	reader := bufio.NewReader(file)
 	content, err := ioutil.ReadAll(reader)
