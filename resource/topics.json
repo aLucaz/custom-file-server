@@ -2,9 +2,7 @@
   "topics": [
     {
       "name": "channel-1",
-      "port": [
-        "45501"
-      ]
+      "port": []
     },
     {
       "name": "channel-2",
