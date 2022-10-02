@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func CreateClientRegistrationRequest(address string, channelName string) []byte {
+func CreateClientRegistrationRequest(address string, channelName string) ([]byte, error) {
 	body := model.ClientRegistrationRequest{}
 	body.ChannelName = channelName
 	addressList := strings.Split(address, ":")
@@ -19,14 +19,16 @@ func CreateClientRegistrationRequest(address string, channelName string) []byte 
 	headers := model.Header{}
 	headers.Operation = constant.REGISTER_CLIENT
 	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
 	jsonHeaders, err := json.Marshal(headers)
 	if err != nil {
-		util.WriteMsgLog(constant.ERROR, err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 	requestStr := constant.HEADER_TITLE + string(jsonHeaders[:]) + constant.REQ_SEP + constant.BODY_TITLE + string(jsonBody[:])
 	util.WriteMsgLog(constant.INFO, fmt.Sprintf("Request created on port %s...", body.Port))
-	return []byte(requestStr)
+	return []byte(requestStr), nil
 }
 
 func CreateSendFileRequest(fileName string, channelName string) []byte {
@@ -50,18 +52,20 @@ func CreateSendFileRequest(fileName string, channelName string) []byte {
 	return []byte(requestStr)
 }
 
-func CreateSendFileRequestFromServer(body model.SendFileRequest, headers model.Header) []byte {
+func CreateSendFileRequestFromServer(body model.SendFileRequest, headers model.Header) ([]byte, error) {
 	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
 	jsonHeaders, err := json.Marshal(headers)
 	if err != nil {
-		util.WriteMsgLog(constant.ERROR, err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 	requestStr := constant.HEADER_TITLE + string(jsonHeaders[:]) + constant.REQ_SEP + constant.BODY_TITLE + string(jsonBody[:])
-	return []byte(requestStr)
+	return []byte(requestStr), nil
 }
 
-func GetHeaders(buffer []byte) model.Header {
+func GetHeaders(buffer []byte) (model.Header, error) {
 	bufferStr := string(buffer)
 	request := strings.Split(bufferStr, constant.REQ_SEP)
 	requestHeader := strings.Split(request[0], constant.HEADER_TITLE)[1]
@@ -69,11 +73,12 @@ func GetHeaders(buffer []byte) model.Header {
 	err := json.Unmarshal([]byte(requestHeader), &headers)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
+		return headers, err
 	}
-	return headers
+	return headers, nil
 }
 
-func GetClientRegistrationBody(buffer []byte) model.ClientRegistrationRequest {
+func GetClientRegistrationBody(buffer []byte) (model.ClientRegistrationRequest, error) {
 	bufferStr := string(buffer)
 	request := strings.Split(bufferStr, constant.REQ_SEP)
 	requestBody := strings.Split(request[1], constant.BODY_TITLE)[1]
@@ -81,11 +86,12 @@ func GetClientRegistrationBody(buffer []byte) model.ClientRegistrationRequest {
 	err := json.Unmarshal([]byte(requestBody), &clientRegistrationRequest)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
+		return clientRegistrationRequest, err
 	}
-	return clientRegistrationRequest
+	return clientRegistrationRequest, nil
 }
 
-func GetSendFileBody(buffer []byte) model.SendFileRequest {
+func GetSendFileBody(buffer []byte) (model.SendFileRequest, error) {
 	bufferStr := string(buffer)
 	request := strings.Split(bufferStr, constant.REQ_SEP)
 	requestBody := strings.Split(request[1], constant.BODY_TITLE)[1]
@@ -93,6 +99,7 @@ func GetSendFileBody(buffer []byte) model.SendFileRequest {
 	err := json.Unmarshal([]byte(requestBody), &sendFileRequest)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
+		return sendFileRequest, err
 	}
-	return sendFileRequest
+	return sendFileRequest, nil
 }

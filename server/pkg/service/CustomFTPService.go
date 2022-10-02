@@ -19,23 +19,33 @@ func RegisterChannel(request model.ClientRegistrationRequest, config *model.Topi
 	util.UpdateConfig(config)
 }
 
-func SendFile(sendFileRequest model.SendFileRequest, headers model.Header, config *model.TopicConfig) {
+func SendFileToEveryClientOnChannel(ports []string, headers model.Header, sendFileRequest model.SendFileRequest) {
+	for _, port := range ports {
+		connection, err := net.Dial(constant.SERVER_TYPE, constant.CLIENT_HOST+":"+port)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+		}
+		request, err := service.CreateSendFileRequestFromServer(sendFileRequest, headers)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+		}
+		_, err = connection.Write(request)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+		}
+		err = connection.Close()
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+		}
+	}
+}
+
+func SendFileToChannel(sendFileRequest model.SendFileRequest, headers model.Header, config *model.TopicConfig) {
 	util.WriteMsgLog(constant.INFO, "Broadcasting file...")
 	channelName := sendFileRequest.ChannelName
 	for _, topic := range config.Topics {
 		if topic.Name == channelName {
-			for _, port := range topic.Ports {
-				connection, err := net.Dial(constant.SERVER_TYPE, constant.CLIENT_HOST+":"+port)
-				if err != nil {
-					util.WriteMsgLog(constant.ERROR, err.Error())
-				}
-				request := service.CreateSendFileRequestFromServer(sendFileRequest, headers)
-				_, err = connection.Write(request)
-				err = connection.Close()
-				if err != nil {
-					util.WriteMsgLog(constant.ERROR, err.Error())
-				}
-			}
+			SendFileToEveryClientOnChannel(topic.Ports, headers, sendFileRequest)
 		}
 	}
 }
@@ -45,17 +55,30 @@ func ProcessRequest(conn net.Conn, config *model.TopicConfig) {
 	bufferLen, err := conn.Read(buffer)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
+		return
 	}
 	validBuffer := buffer[:bufferLen]
-	headers := service.GetHeaders(validBuffer)
+	headers, err := service.GetHeaders(validBuffer)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		return
+	}
 	if headers.Operation == constant.REGISTER_CLIENT {
-		clientRegistrationRequest := service.GetClientRegistrationBody(validBuffer)
+		clientRegistrationRequest, err := service.GetClientRegistrationBody(validBuffer)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+			return
+		}
 		RegisterChannel(clientRegistrationRequest, config)
 	} else if headers.Operation == constant.SEND_FILE {
-		sendFileRequest := service.GetSendFileBody(validBuffer)
+		sendFileRequest, err := service.GetSendFileBody(validBuffer)
+		if err != nil {
+			util.WriteMsgLog(constant.ERROR, err.Error())
+			return
+		}
 		if util.Hash(sendFileRequest.Data) == headers.FingerPrint {
 			util.WriteMsgLog(constant.INFO, "File successfully received in the server")
-			SendFile(sendFileRequest, headers, config)
+			SendFileToChannel(sendFileRequest, headers, config)
 			util.WriteMsgLog(constant.INFO, "All files has been sended")
 		} else {
 			util.WriteMsgLog(constant.ERROR, "The file is corrupted")

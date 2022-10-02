@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-func DecodeBase64Str(str string) string {
+func DecodeBase64Str(str string) (string, error) {
 	var decoded, err = base64.StdEncoding.DecodeString(str)
 	if err != nil {
 		WriteMsgLog(constant.ERROR, err.Error())
-		return ""
+		return "", err
 	}
-	return string(decoded)
+	return string(decoded), nil
 }
 
 func DecodeBufferStrToRegistrationRequest(buffer []byte) model.ClientRegistrationRequest {

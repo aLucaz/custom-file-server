@@ -6,24 +6,26 @@ import (
 	"custom-file-server/shared/util"
 	"fmt"
 	"net"
-	"os"
 )
 
 func main() {
-	decoded := util.DecodeBase64Str(constant.SERVER_BANNER)
-	util.WriteBanner(decoded)
+	util.WriteBanner(constant.SERVER_BANNER)
 	util.WriteMsgLog(constant.INFO, "Loading configuration...")
 	config, err := util.GetConfig()
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, "Error trying to load configurations")
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		panic(err)
+	}
 	server, err := net.Listen(constant.SERVER_TYPE, constant.SERVER_HOST+":"+constant.SERVER_PORT)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 	defer func(server net.Listener) {
 		err := server.Close()
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())
-			os.Exit(1)
 		}
 	}(server)
 	util.WriteMsgLog(constant.INFO, fmt.Sprintf("Starting server on port %s...", constant.SERVER_PORT))
@@ -31,7 +33,7 @@ func main() {
 		conn, err := server.Accept()
 		if err != nil {
 			util.WriteMsgLog(constant.ERROR, err.Error())
-			os.Exit(1)
+			panic(err)
 		}
 		go service.ProcessRequest(conn, config)
 	}

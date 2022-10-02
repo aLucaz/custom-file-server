@@ -12,11 +12,20 @@ func ProcessMessage(conn net.Conn) {
 	bufferLen, err := conn.Read(buffer)
 	if err != nil {
 		util.WriteMsgLog(constant.ERROR, err.Error())
+		return
 	}
 	validBuffer := buffer[:bufferLen]
 	util.WriteMsgLog(constant.INFO, string(validBuffer))
-	headers := service.GetHeaders(validBuffer)
-	sendFileRequest := service.GetSendFileBody(validBuffer)
+	headers, err := service.GetHeaders(validBuffer)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		return
+	}
+	sendFileRequest, err := service.GetSendFileBody(validBuffer)
+	if err != nil {
+		util.WriteMsgLog(constant.ERROR, err.Error())
+		return
+	}
 	if util.Hash(sendFileRequest.Data) == headers.FingerPrint {
 		util.WriteMsgLog(constant.INFO, "File successfully received in the client")
 	} else {

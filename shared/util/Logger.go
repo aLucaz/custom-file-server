@@ -13,5 +13,10 @@ func WriteMsgLog(typeMsg, message string) {
 }
 
 func WriteBanner(banner string) {
-	fmt.Println("\n" + banner)
+	decoded, err := DecodeBase64Str(banner)
+	if err != nil {
+		WriteMsgLog(constant.ERROR, "Banner not available")
+	} else {
+		fmt.Println("\n" + decoded)
+	}
 }
